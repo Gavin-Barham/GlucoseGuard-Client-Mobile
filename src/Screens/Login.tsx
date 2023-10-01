@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, SafeAreaView, TextInput, Button } from 'react-native';
-import { login, onAuthentication } from '../API/auth'
-import { storeData } from '../API/localStorage'
-import * as LocalAuthentication from 'expo-local-authentication'
+import { StyleSheet, SafeAreaView, View, TextInput, Button, Switch, Text } from 'react-native';
+import { login, onAuthentication, onVerifyBiometrics } from '../API/auth'
+import { retrieveData, storeData } from '../API/localStorage'
+import * as SecureStore from 'expo-secure-store'
+
+type Props = {
+    navigation: any;
+}
 
 
-export default function Login({navigation}: any) {
-    const [isBiometricSupported, setIsBiometricSupported] = useState(false)
+export default function Login({navigation}: Props) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [useFaceID, setUseFaceID] = useState(false);
 
     const handleLogin = async () => {
         if (!email || !email.includes('@')) {
@@ -20,16 +24,44 @@ export default function Login({navigation}: any) {
             return;
         }
         const res = await login({email: email.toLowerCase(), password})
-        await storeData('accessToken', res.accessToken);
-        navigation.navigate("Home")
+        if (res.ok === true) {
+            await storeData('accessToken', res.accessToken);
+            if (useFaceID === true ) {
+                if (await onAuthentication()) {
+                    await SecureStore.setItemAsync("ht-user-email", email.toLowerCase());
+                    await SecureStore.setItemAsync("ht-user-password", password)
+                } else {
+                    await storeData('useFaceID', false);
+                }
+                navigation.navigate("Home")
+            } else if (useFaceID === false) {
+                navigation.navigate("Home")
+            }
+
+        }
     }
 
     useEffect(() => {
         (async () => {
-            const compatable = await LocalAuthentication.hasHardwareAsync()
-            setIsBiometricSupported(compatable)
-        })
-    }, [])
+            const shouldUseFaceID: boolean = await retrieveData('useFaceID', true);
+            setUseFaceID(shouldUseFaceID)
+            if (shouldUseFaceID) {
+                const isEnabled = await onVerifyBiometrics()
+                if (isEnabled) {
+                    const success = await onAuthentication();
+                    if (success) {
+                        const email = await SecureStore.getItemAsync("ht-user-email");
+                        const password = await SecureStore.getItemAsync("ht-user-password");
+                        const res = await login({email: email as string, password: password as string})
+                        if (res.ok === true) {
+                            await storeData('accessToken', res.accessToken)
+                            navigation.navigate('Home')
+                        }
+                    }
+                }
+            }
+        })();
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -48,13 +80,33 @@ export default function Login({navigation}: any) {
             <Button 
                 color='blue'
                 title='Login'
-                onPress={onAuthentication}
-            />
-            <Button 
-                color='blue'
-                title='Sign Up Here'
-                onPress={() => navigation.navigate("Register")}
-            />
+                onPress={handleLogin}
+                />
+            <View style={styles.fixToText}>
+                <Text style={{paddingRight: 20}}>Enable FaceID</Text>
+                <Switch 
+                    value={useFaceID}
+                    onChange={async () => {
+                        const isEnabled = await onVerifyBiometrics()
+                        if (isEnabled) {
+                            let prevValue;
+                            setUseFaceID(prev => {
+                                prevValue = !prev
+                                return prevValue
+                            });
+                            await storeData('useFaceID', prevValue);
+                        }
+                    }}
+                />
+            </View>
+            <View style={[styles.fixToText, styles.bottom]}> 
+                <Text>Don't have an account? </Text>
+                <Button 
+                    color='blue'
+                    title='Sign Up'
+                    onPress={() => navigation.navigate("Register")}
+                    />
+            </View>
         </SafeAreaView>
     );
 }
@@ -85,5 +137,15 @@ const styles = StyleSheet.create({
         width: 240,
         backgroundColor: "blue",
         color: 'black'
+    },
+    fixToText: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 20,
+    },
+    bottom: {
+        bottom: -200
     }
 });

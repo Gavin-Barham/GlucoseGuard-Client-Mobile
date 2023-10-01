@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, SafeAreaView, TextInput, Button } from 'react-native';
+import { StyleSheet, SafeAreaView, TextInput, View, Text, Button } from 'react-native';
 import { register } from '../API/auth'
 
 export default function Register ({ navigation }: any) {
@@ -41,11 +41,14 @@ export default function Register ({ navigation }: any) {
                 title='Sign Up'
                 onPress={handleRegister}
             />
-            <Button 
-                color='blue'
-                title='Login Here'
-                onPress={() => navigation.navigate("Login")}
-            />
+            <View style={[styles.fixToText, styles.bottom]}>
+                <Text>Already have an account with us? </Text>
+                <Button 
+                    color='blue'
+                    title='Login'
+                    onPress={() => navigation.navigate("Login")}
+                />
+            </View>
         </SafeAreaView>
     );
 }
@@ -76,5 +79,15 @@ const styles = StyleSheet.create({
         width: 240,
         backgroundColor: "blue",
         color: 'black'
+    },
+    fixToText: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 20,
+    },
+    bottom: {
+        bottom: -200
     }
 });

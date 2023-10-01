@@ -1,7 +1,7 @@
 {
     "expo": {
-        "name": "ht-client-ts",
-        "slug": "ht-client-ts",
+        "name": "ht-native-ts",
+        "slug": "ht-native-ts",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./src/assets/icon.png",
@@ -14,7 +14,12 @@
         "assetBundlePatterns": ["**/*"],
         "ios": {
             "supportsTablet": true,
-            "NSFaceIDUsageDescription": "Face ID is used to authenticate users"
+            "config": {
+                "usesNonExemptEncryption": false
+            },
+            "infoPlist": {
+                "NSFaceIDUsageDescription": "Face ID is used to authenticate users"
+            }
         },
         "android": {
             "adaptiveIcon": {

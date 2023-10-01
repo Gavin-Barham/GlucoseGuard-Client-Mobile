@@ -1,12 +1,26 @@
 import * as LocalAuthentication from 'expo-local-authentication'
 
 const onAuthentication = async () => {
-    const auth = await LocalAuthentication.authenticateAsync({
+    const auth: LocalAuthentication.LocalAuthenticationResult = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authentication with biometrics',
         fallbackLabel: 'Enter Passcode',
     });
-    console.log(auth.success, auth);
+    return auth.success;
     
+}
+const onVerifyBiometrics = async () => {
+    let success = await LocalAuthentication.hasHardwareAsync();
+    let bioTypes = [];
+    if (success) {
+        bioTypes = await LocalAuthentication.supportedAuthenticationTypesAsync()
+        if (bioTypes.length > 0) {
+            success = await LocalAuthentication.isEnrolledAsync();
+            if (success) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 
@@ -46,4 +60,4 @@ const register = async (credentials: IUserAuth) => {
     };
 };
 
-export { login, register, onAuthentication };
+export { login, register, onAuthentication, onVerifyBiometrics };
