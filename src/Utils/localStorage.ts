@@ -32,4 +32,16 @@ const retrieveData = async (key: string, isJson: Boolean = false) => {
   }
 };
 
-export { storeData, retrieveData };
+const removeData = async (key: string) => {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    throw new Error('Could not retrieve data')
+  }
+};
+
+const getAccessToken = async () => {
+  return await retrieveData("accessToken");
+}
+
+export { storeData, retrieveData, removeData, getAccessToken };
