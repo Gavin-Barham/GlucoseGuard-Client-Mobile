@@ -1,18 +1,10 @@
+import type { User } from 'Types/users';
 import React, { createContext, useState, ReactNode, useContext, FC, Dispatch, SetStateAction } from 'react';
 
 // Define a type for the context value
-type User = {
-  isAuthenticated: Boolean;
-  id?: number;
-  first?: string;
-  last?: string;
-  email?: string;
-  height?: number;
-  dailyTarget?: number;
-};
 type UserContextType = {
   user: User;
-  setUser: Dispatch<SetStateAction<User>>
+  setUser: Dispatch<SetStateAction<Object>>;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -25,9 +17,7 @@ type UserProviderProps = {
 };
 
 const UserProvider: FC<UserProviderProps> = ({ children }: UserProviderProps) => {
-  const [user, setUser] = useState({
-    isAuthenticated: false,
-  } as User);
+  const [user, setUser] = useState({});
   
   const value: UserContextType = {
     user,
@@ -50,4 +40,4 @@ function useUser() {
 }
 
 
-export { UserContext, UserProvider, useUser };
+export { UserContext, UserProvider, useUser, User, UserContextType };
