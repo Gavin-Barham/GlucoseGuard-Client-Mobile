@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, SafeAreaView, TextInput, View, Text, Button } from 'react-native';
-import { register } from '../API/auth'
+import { register } from '../API/requests';
 
 export default function Register ({ navigation }: any) {
     const [email, setEmail] = useState('')
@@ -13,7 +13,7 @@ export default function Register ({ navigation }: any) {
         if (!password || password.length < 8) {
             alert('Password must be at least 8 characters')
         }
-        const res = await register({email, password})
+        const res = await register(email, password)
         if (res.ok === true) {
             navigation.navigate("Home")
         }
@@ -29,10 +29,12 @@ export default function Register ({ navigation }: any) {
                 placeholder='email'
                 value={email}
                 onChangeText={text => setEmail(text)}
-                />
+            />
             <TextInput 
+                textContentType='newPassword' 
                 style={styles.loginField} 
-                placeholder='password' 
+                placeholder='password'
+                secureTextEntry={true}
                 value={password}
                 onChangeText={text => setPassword(text)}
             />

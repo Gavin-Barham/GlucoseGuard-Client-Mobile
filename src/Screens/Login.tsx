@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { StyleSheet, SafeAreaView, View, TextInput, Button, Switch, Text } from 'react-native';
-import { login, onAuthentication, onVerifyBiometrics } from '../API/auth'
-import { retrieveData, storeData } from '../API/localStorage'
+import { onAuthentication, onVerifyBiometrics, useFaceIdOnOpen } from '../Utils/auth'
+import { login } from '../API/requests';
+import { storeData } from '../Utils/localStorage'
 import * as SecureStore from 'expo-secure-store'
+import { UserContext } from '../Context/UserContext';
 
 type Props = {
     navigation: any;
@@ -10,9 +12,14 @@ type Props = {
 
 
 export default function Login({navigation}: Props) {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [useFaceID, setUseFaceID] = useState(false);
+    const context = useContext(UserContext);
+    const [email, setEmail] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+    const [useFaceID, setUseFaceID] = useState<boolean>(false);
+
+    useEffect(() => {
+        (async () => useFaceIdOnOpen(context?.user!, context?.setUser!, setUseFaceID, navigation))()
+    }, []);
 
     const handleLogin = async () => {
         if (!email || !email.includes('@')) {
@@ -23,7 +30,7 @@ export default function Login({navigation}: Props) {
             alert('Password must be at least 8 characters')
             return;
         }
-        const res = await login({email: email.toLowerCase(), password})
+        const res = await login(email.toLowerCase(), password)
         if (res.ok === true) {
             await storeData('accessToken', res.accessToken);
             if (useFaceID === true ) {
@@ -33,55 +40,89 @@ export default function Login({navigation}: Props) {
                 } else {
                     await storeData('useFaceID', false);
                 }
-                navigation.navigate("Home")
+                context?.setUser(prev => ({ 
+                    ...prev, 
+                    isAuthenticated: true,
+                    email: email, 
+                    id: res.userID,
+                    accessToken: res.accessToken
+                }))
+                navigation.navigate('App', {screen: 'Home'});
             } else if (useFaceID === false) {
-                navigation.navigate("Home")
+                context?.setUser(prev => ({ 
+                    ...prev,
+                    isAuthenticated: true,
+                    email: email,
+                    id: res.userID,
+                    accessToken: res.accessToken
+                }))
+                navigation.navigate('App', {screen: 'Home'});
             }
-
+            
+        } else {
+            alert(res.message);
+        }
+    }
+    const handleLoginWithFaceID = async () => {
+        if (useFaceID === false) {
+            alert("Please enable FaceID and login with email and password to use FaceID in future logins");
+        } else {
+            const success = await onAuthentication()
+            if (success === true) {
+                const storedEmail = await SecureStore.getItemAsync("ht-user-email");
+                const storedPassword = await SecureStore.getItemAsync("ht-user-password");
+                const res = await login(storedEmail as string,storedPassword as string)
+                if (res.ok === true) {
+                    await storeData('accessToken', res.accessToken)
+                    context?.setUser(prev => ({ 
+                        ...prev, 
+                        isAuthenticated: true,
+                        email: storedEmail, 
+                        id: res.userID,
+                        accessToken: res.accessToken
+                    }))
+                } else {
+                    alert(res.message);
+                    setEmail('');
+                    setPassword('');
+                    navigation.navigate('App', {screen: 'Home'});
+                }
+            } else {
+                await storeData('useFaceID', false);
+            }
         }
     }
 
-    useEffect(() => {
-        (async () => {
-            const shouldUseFaceID: boolean = await retrieveData('useFaceID', true);
-            setUseFaceID(shouldUseFaceID)
-            if (shouldUseFaceID) {
-                const isEnabled = await onVerifyBiometrics()
-                if (isEnabled) {
-                    const success = await onAuthentication();
-                    if (success) {
-                        const email = await SecureStore.getItemAsync("ht-user-email");
-                        const password = await SecureStore.getItemAsync("ht-user-password");
-                        const res = await login({email: email as string, password: password as string})
-                        if (res.ok === true) {
-                            await storeData('accessToken', res.accessToken)
-                            navigation.navigate('Home')
-                        }
-                    }
-                }
-            }
-        })();
-    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
             <TextInput 
+                textContentType='emailAddress'
                 style={styles.loginField} 
                 placeholder='email'
                 value={email}
                 onChangeText={text => setEmail(text)}
-                />
+            />
             <TextInput 
+                textContentType='newPassword' 
                 style={styles.loginField} 
-                placeholder='password' 
+                placeholder='password'
+                secureTextEntry={true}
                 value={password}
                 onChangeText={text => setPassword(text)}
             />
-            <Button 
-                color='blue'
-                title='Login'
-                onPress={handleLogin}
+            <View style={styles.fixToText}>
+                <Button 
+                    color='blue'
+                    title='Login'
+                    onPress={handleLogin}
                 />
+                <Button 
+                    color='blue'
+                    title='FaceID'
+                    onPress={handleLoginWithFaceID}
+                />
+            </View>
             <View style={styles.fixToText}>
                 <Text style={{paddingRight: 20}}>Enable FaceID</Text>
                 <Switch 
@@ -100,12 +141,12 @@ export default function Login({navigation}: Props) {
                 />
             </View>
             <View style={[styles.fixToText, styles.bottom]}> 
-                <Text>Don't have an account? </Text>
+                <Text>Don't have an account?</Text>
                 <Button 
                     color='blue'
                     title='Sign Up'
                     onPress={() => navigation.navigate("Register")}
-                    />
+                />
             </View>
         </SafeAreaView>
     );
