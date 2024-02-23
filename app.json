@@ -1,34 +1,47 @@
 {
-    "expo": {
-        "name": "ht-native-ts",
-        "slug": "ht-native-ts",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./src/assets/icon.png",
-        "userInterfaceStyle": "light",
-        "splash": {
-            "image": "./src/assets/splash.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "assetBundlePatterns": ["**/*"],
-        "ios": {
-            "supportsTablet": true,
-            "config": {
-                "usesNonExemptEncryption": false
-            },
-            "infoPlist": {
-                "NSFaceIDUsageDescription": "Face ID is used to authenticate users"
-            }
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./src/assets/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            }
-        },
-        "web": {
-            "favicon": "./src/assets/favicon.png"
-        }
-    }
+  "expo": {
+    "name": "ht-native-ts",
+    "slug": "glucose-guard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "platform": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Face ID is used to authenticate users"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ce0ac62d-3353-4b7c-bcc6-1621d953caa0"
+      }
+    },
+    "owner": "lucidlegend"
+  }
 }
