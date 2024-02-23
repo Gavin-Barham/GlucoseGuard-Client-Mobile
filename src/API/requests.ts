@@ -65,34 +65,14 @@ const createDay = async (user: User | undefined, date: string) => {
     )).status;
 }
 const getDay = async (user: User | undefined, date: string) => {
-    const res = await APIManager.get(`/${user?.id!}/day`, {
+    return (await APIManager.get(`/${user?.id!}/day`, {
         params: {
             date
         },
         headers: {
             Authorization: `Bearer ${user?.accessToken!}`,
         },
-        validateStatus: (status) => {
-            return status >= 200 && status <= 404
-        }
-    });
-    if (res.status === 404) {
-        const createRes = await createDay(user, date);
-        if (createRes === 200 || createRes === 201) {
-            return (await APIManager.get(`/${user?.id!}/day`, {
-                params: {
-                    date
-                },
-                headers: {
-                    Authorization: `Bearer ${user?.accessToken!}`,
-                },
-                validateStatus: (status) => {
-                    return status >= 200 && status <= 404
-                }
-            })).data.day
-        }
-    }
-    return res.data.day
+    })).data.day;
 }
 const getDayRange = async (user: User | undefined, range: DateRange) => {
     return (await APIManager.get(`/${user?.id!}/range`, {
@@ -115,7 +95,7 @@ const getMedical = async (user: User | undefined, date: string) => {
         headers: {
             Authorization: `Bearer ${user?.accessToken!}`,
         }
-    })).data.day;
+    })).data.day.medical;
 }
 const updateMedical = async (user: User | undefined, date: string, body: Medical) => {
     return (await APIManager.put(`/${user?.id!}/medical`, body, { 
@@ -138,7 +118,7 @@ const getNutrition = async (user: User | undefined, date: string) => {
         headers: {
             Authorization: `Bearer ${user?.accessToken!}`,
         }
-    })).data.day;
+    })).data.day.nutrition;
 }
 const updateNutrition = async (user: User | undefined, date: string, body: Nutrition) => {
     return (await APIManager.put(`/${user?.id!}/nutrition`, body, { 
@@ -161,7 +141,7 @@ const getExercise = async (user: User | undefined, date: string) => {
         headers: {
             Authorization: `Bearer ${user?.accessToken!}`,
         }
-    })).data.day;
+    })).data.day.exercise;
 }
 const updateExercise = async (user: User | undefined, date: string, body: Exercise) => {
     return (await APIManager.put(`/${user?.id!}/exercise`, body, { 
