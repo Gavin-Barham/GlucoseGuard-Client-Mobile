@@ -26,13 +26,15 @@
       },
       "infoPlist": {
         "NSFaceIDUsageDescription": "Face ID is used to authenticate users"
-      }
+      },
+      "bundleIdentifier": "com.lucidlegend.glucoseguard"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lucidlegend.glucoseguard"
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
